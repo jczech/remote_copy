@@ -43,7 +43,7 @@ class GetFilesToTransfer:
         return self.myfilenames
 
 
-def makeDirectories(sftp, remoteroot, dirnames):
+def make_directories(sftp, remoteroot, dirnames):
     # make directory
     t1 = time.time()
     sftp.chdir(remoteroot)
@@ -57,7 +57,7 @@ def makeDirectories(sftp, remoteroot, dirnames):
     print('Elapsed (makedir): %f seconds' % (t2 - t1))
 
 
-def pushFiles(sftp, remoteroot, filenames):
+def push_files(sftp, remoteroot, filenames):
     # make directory
     t1 = time.time()
     sftp.chdir(remoteroot)
@@ -92,8 +92,8 @@ def main():
 
     sftp = paramiko.SFTPClient.from_transport(transport)
 
-    makeDirectories(sftp, remoteroot, TrFiles.dirnames())
-    pushFiles(sftp, remoteroot, TrFiles.filenames())
+    make_directories(sftp, remoteroot, TrFiles.dirnames())
+    push_files(sftp, remoteroot, TrFiles.filenames())
 
     # sftpstat = paramiko.SFTPClient.stat(sftp)
     # sftp1 = paramiko.SFTPClient.from_transport(transport)
