@@ -1,15 +1,26 @@
+#!/usr/bin/env python3
+
 import time
 import paramiko
 import select
-from os import path, walk
+import os
+import sys
+import getpass
 
 
-DIRTOMOVE = ''
-remoteroot = ''
+try:
+    local_dir = os.environ['LOCAL_DIR']
+except:
+    print("LOCAL_DIR environment var not set")
+try:
+    remote_dir = os.environ['REMOTE_DIR']
+except:
+    print("REMOTE_DIR environment var not set")
+
 host = "bridges.psc.edu"
 port = 22
-password = ""
-username = ""
+username = input("Enter your username:")
+password = getpass.getpass(prompt="Enter your password:")
 
 
 class GetFilesToTransfer:
@@ -20,17 +31,17 @@ class GetFilesToTransfer:
         self.myfilenames = []
         self.myfilesize = []
 
-        self.rootdir, self.firstdir = path.split(mypath)
+        self.rootdir, self.firstdir = os.path.split(mypath)
         print("ROOT=", self.rootdir)
         self.mydirnames.append([mypath, self.firstdir])
-        for (dirpath, dirnames, filenames) in walk(mypath):
+        for (dirpath, dirnames, filenames) in os.walk(mypath):
             for name in filenames:
-                fullpathname = path.join(dirpath, name)
-                relpathname = path.relpath(fullpathname, self.rootdir)
-                self.myfilenames.append([path.getsize(fullpathname), fullpathname, relpathname])
+                fullpathname = os.path.join(dirpath, name)
+                relpathname = os.path.relpath(fullpathname, self.rootdir)
+                self.myfilenames.append([os.path.getsize(fullpathname), fullpathname, relpathname])
             for name in dirnames:
-                fullpathname = path.join(dirpath, name)
-                relpathname = path.relpath(fullpathname, self.rootdir)
+                fullpathname = os.path.join(dirpath, name)
+                relpathname = os.path.relpath(fullpathname, self.rootdir)
                 self.mydirnames.append([fullpathname, relpathname])
 
     def rootdir(self):
@@ -43,10 +54,10 @@ class GetFilesToTransfer:
         return self.myfilenames
 
 
-def make_directories(sftp, remoteroot, dirnames):
+def make_directories(sftp, remote_dir, dirnames):
     # make directory
     t1 = time.time()
-    sftp.chdir(remoteroot)
+    sftp.chdir(remote_dir)
     for local, remote in dirnames:
         print(local, remote)
         try:
@@ -57,10 +68,10 @@ def make_directories(sftp, remoteroot, dirnames):
     print('Elapsed (makedir): %f seconds' % (t2 - t1))
 
 
-def push_files(sftp, remoteroot, filenames):
+def push_files(sftp, remote_dir, filenames):
     # make directory
     t1 = time.time()
-    sftp.chdir(remoteroot)
+    sftp.chdir(remote_dir)
     bytestransfer = 0.0
     for tbytes, local, remote in filenames:
         print(tbytes, local, remote)
@@ -73,7 +84,8 @@ def push_files(sftp, remoteroot, filenames):
 
 
 def main():
-    TrFiles = GetFilesToTransfer(DIRTOMOVE)
+
+    TrFiles = GetFilesToTransfer(local_dir)
     # print("DIRNAMES")
     # for i in TrFiles.dirnames():
     #    print(i)
@@ -92,8 +104,8 @@ def main():
 
     sftp = paramiko.SFTPClient.from_transport(transport)
 
-    make_directories(sftp, remoteroot, TrFiles.dirnames())
-    push_files(sftp, remoteroot, TrFiles.filenames())
+    make_directories(sftp, remote_dir, TrFiles.dirnames())
+    push_files(sftp, remote_dir, TrFiles.filenames())
 
     # sftpstat = paramiko.SFTPClient.stat(sftp)
     # sftp1 = paramiko.SFTPClient.from_transport(transport)
