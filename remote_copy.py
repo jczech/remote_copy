@@ -71,103 +71,102 @@ def pushFiles(sftp,remoteroot,filenames):
     print 'Bytes Transferred: %f seconds' % (bytestransfer)
     print 'Throughput: %f MegaBytes per second' % ((bytestransfer/1000000.0)/(t2-t1))
     
-            
-
-TrFiles=GetFilesToTransfer(DIRTOMOVE)
-#print "DIRNAMES"
-#for i in TrFiles.dirnames():
-#   print i
-print "FILENAMES"
-for i in TrFiles.filenames():
-   print i
-
-
-paramiko.util.log_to_file('mylog')
+def main():
+    TrFiles=GetFilesToTransfer(DIRTOMOVE)
+    #print "DIRNAMES"
+    #for i in TrFiles.dirnames():
+    #   print i
+    print "FILENAMES"
+    for i in TrFiles.filenames():
+       print i
 
 
-# Open a transport
-
-transport = paramiko.Transport((host, port))
-# Authenticate
-transport.connect(username = username, password = password)
-# Go!
-
-sftp = paramiko.SFTPClient.from_transport(transport)
-
-makeDirectories(sftp,remoteroot,TrFiles.dirnames())
-pushFiles(sftp,remoteroot,TrFiles.filenames())
-
-#sftpstat = paramiko.SFTPClient.stat(sftp)
-#sftp1 = paramiko.SFTPClient.from_transport(transport)
-#sftp2 = paramiko.SFTPClient.from_transport(transport)
-
-#print sftp
-#print sftp1
-#print sftp2
-
-#List Remote Directory
-#remotefiles=sftp.listdir()
-#print remotefiles
-#remoteobj=sftp.listdir_attr()
-#for i in remoteobj:
-#  print i
-#  print i.st_size
-#  print i.st_uid
-#  print i.st_gid
-#  print i.st_mode
-#  print i.st_atime
-#  print i.st_mtime
-#print sftpstat
-# Download
-
-#filepath = 'README.GET'
-#localpath = 'README.GET'
-#sftp.get(filepath, localpath)
-
-# Upload
-t1 = time.time()
-print 'Elapsed: %f seconds' % (time.time() - t1)
-#filepath = 'README.GET'
-#localpath = 'README.PUT'
-#sftp.put(localpath, filepath)
-
-# Close
-
-sftp.close()
-transport.close()
+    paramiko.util.log_to_file('mylog')
 
 
-command='ls -l'
-try:
+    # Open a transport
+
+    transport = paramiko.Transport((host, port))
+    # Authenticate
+    transport.connect(username = username, password = password)
+    # Go!
+
+    sftp = paramiko.SFTPClient.from_transport(transport)
+
+    makeDirectories(sftp,remoteroot,TrFiles.dirnames())
+    pushFiles(sftp,remoteroot,TrFiles.filenames())
+
+    #sftpstat = paramiko.SFTPClient.stat(sftp)
+    #sftp1 = paramiko.SFTPClient.from_transport(transport)
+    #sftp2 = paramiko.SFTPClient.from_transport(transport)
+
+    #print sftp
+    #print sftp1
+    #print sftp2
+
+    #List Remote Directory
+    #remotefiles=sftp.listdir()
+    #print remotefiles
+    #remoteobj=sftp.listdir_attr()
+    #for i in remoteobj:
+    #  print i
+    #  print i.st_size
+    #  print i.st_uid
+    #  print i.st_gid
+    #  print i.st_mode
+    #  print i.st_atime
+    #  print i.st_mtime
+    #print sftpstat
+    # Download
+
+    #filepath = 'README.GET'
+    #localpath = 'README.GET'
+    #sftp.get(filepath, localpath)
+
+    # Upload
+    t1 = time.time()
+    print 'Elapsed: %f seconds' % (time.time() - t1)
+    #filepath = 'README.GET'
+    #localpath = 'README.PUT'
+    #sftp.put(localpath, filepath)
+
+    # Close
+
+    sftp.close()
+    transport.close()
+
+
+    command='ls -l'
+    try:
+        client = paramiko.SSHClient()
+        client.load_system_host_keys()
+        client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        #client.set_missing_host_key_policy(paramiko.WarningPolicy())
+        
+        client.connect(host, port=port, username=username, password=password)
+
+        stdin, stdout, stderr = client.exec_command(command)
+        print stdout.read(),
+
+    finally:
+        client.close()
+
+
     client = paramiko.SSHClient()
     client.load_system_host_keys()
     client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-    #client.set_missing_host_key_policy(paramiko.WarningPolicy())
-    
-    client.connect(host, port=port, username=username, password=password)
+    client.connect(host,port=port,username=username,password=password)
+    transport = client.get_transport()
+    channel = transport.open_session()
+    channel.exec_command("ls")
+    while True:
+      if channel.exit_status_ready():
+         break
+      rl, wl, xl = select.select([channel],[],[],0.0)
+      if len(rl) > 0:
+        # Must be stdout
+         print channel.recv(1024)
 
-    stdin, stdout, stderr = client.exec_command(command)
-    print stdout.read(),
-
-finally:
-    client.close()
-
-
-
-#
-#
-client = paramiko.SSHClient()
-client.load_system_host_keys()
-client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-client.connect(host,port=port,username=username,password=password)
-transport = client.get_transport()
-channel = transport.open_session()
-channel.exec_command("ls")
-while True:
-  if channel.exit_status_ready():
-     break
-  rl, wl, xl = select.select([channel],[],[],0.0)
-  if len(rl) > 0:
-    # Must be stdout
-     print channel.recv(1024)
-
+            
+if __name__ == "__main__":
+    main()
