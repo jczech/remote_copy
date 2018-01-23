@@ -6,21 +6,7 @@ import select
 import os
 import sys
 import getpass
-
-
-try:
-    local_dir = os.environ['LOCAL_DIR']
-except:
-    print("LOCAL_DIR environment var not set")
-try:
-    remote_dir = os.environ['REMOTE_DIR']
-except:
-    print("REMOTE_DIR environment var not set")
-
-host = "bridges.psc.edu"
-port = 22
-username = input("Enter your username:")
-password = getpass.getpass(prompt="Enter your password:")
+import argparse
 
 
 class GetFilesToTransfer:
@@ -83,12 +69,27 @@ def push_files(sftp, remote_dir, filenames):
     print('Throughput: %f MegaBytes per second' % ((bytestransfer/1000000.0)/(t2-t1)))
 
 
+def setup_argparser():
+    parser = argparse.ArgumentParser(
+        description="How to profile MCell using nutmeg tests:")
+    parser.add_argument(
+        "-l", "--local_dir", required=True, help="local directory")
+    parser.add_argument(
+        "-r", "--remote_dir", required=True, help="remote directory")
+    return parser.parse_args()
+
+
 def main():
+    args = setup_argparser()
+    local_dir = args.local_dir
+    remote_dir = args.remote_dir
+
+    host = "data.psc.edu"
+    port = 22
+    username = input("Enter your username:")
+    password = getpass.getpass(prompt="Enter your password:")
 
     TrFiles = GetFilesToTransfer(local_dir)
-    # print("DIRNAMES")
-    # for i in TrFiles.dirnames():
-    #    print(i)
     print("FILENAMES")
     for i in TrFiles.filenames():
         print(i)
