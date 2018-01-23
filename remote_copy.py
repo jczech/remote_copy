@@ -7,6 +7,7 @@ import os
 import sys
 import getpass
 import argparse
+import hashlib
 
 
 class FilesToTransfer:
@@ -23,7 +24,16 @@ class FilesToTransfer:
             for name in filenames:
                 fullpathname = os.path.join(dirpath, name)
                 relpathname = os.path.relpath(fullpathname, self.rootdir)
-                self.myfilenames.append([os.path.getsize(fullpathname), fullpathname, relpathname])
+                hash_str = ""
+                with open(fullpathname, 'rb') as f:
+                    h = hashlib.sha1()
+                    h.update(f.read())
+                    hash_str = h.hexdigest()
+                self.myfilenames.append([
+                    os.path.getsize(fullpathname),
+                    fullpathname,
+                    relpathname,
+                    hash_str])
             for name in dirnames:
                 fullpathname = os.path.join(dirpath, name)
                 relpathname = os.path.relpath(fullpathname, self.rootdir)
@@ -58,7 +68,7 @@ def push_files(sftp, remote_dir, filenames):
     t1 = time.time()
     sftp.chdir(remote_dir)
     bytestransfer = 0.0
-    for tbytes, local, remote in filenames:
+    for tbytes, local, remote, hash_str in filenames:
         print(tbytes, local, remote)
         sftp.put(local, remote)
         bytestransfer = bytestransfer + tbytes
@@ -90,8 +100,8 @@ def main():
 
     TrFiles = FilesToTransfer(local_dir)
     print("FILENAMES")
-    for i in TrFiles.get_filenames():
-        print(i)
+    for fname in TrFiles.get_filenames():
+        print(fname)
 
     paramiko.util.log_to_file('mylog')
 
