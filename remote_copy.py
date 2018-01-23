@@ -103,9 +103,9 @@ def main():
     username = input("Enter your username:")
     password = getpass.getpass(prompt="Enter your password:")
 
-    TrFiles = FilesToTransfer(local_dir)
+    transfer_files = FilesToTransfer(local_dir)
     print("FILENAMES")
-    for fname in TrFiles.get_filenames():
+    for fname in transfer_files.get_filenames():
         print(fname)
 
     paramiko.util.log_to_file('mylog')
@@ -117,8 +117,8 @@ def main():
 
     # Upload
     sftp = paramiko.SFTPClient.from_transport(transport)
-    make_directories(sftp, remote_dir, TrFiles.get_dirnames())
-    push_files(sftp, remote_dir, TrFiles.get_filenames())
+    make_directories(sftp, remote_dir, transfer_files.get_dirnames())
+    push_files(sftp, remote_dir, transfer_files.get_filenames())
 
     t1 = time.time()
     print('Elapsed: %f seconds' % (time.time() - t1))
