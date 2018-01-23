@@ -9,10 +9,9 @@ import getpass
 import argparse
 
 
-class GetFilesToTransfer:
-    # get files totransfer
+class FilesToTransfer:
+    # get files to transfer
     def __init__(self, mypath):
-        # self.mydirpath = []
         self.mydirnames = []
         self.myfilenames = []
         self.myfilesize = []
@@ -33,15 +32,15 @@ class GetFilesToTransfer:
     def rootdir(self):
         return self.rootdir
 
-    def dirnames(self):
+    def get_dirnames(self):
         return self.mydirnames
 
-    def filenames(self):
+    def get_filenames(self):
         return self.myfilenames
 
 
 def make_directories(sftp, remote_dir, dirnames):
-    # make directory
+    # make the directory tree
     t1 = time.time()
     sftp.chdir(remote_dir)
     for local, remote in dirnames:
@@ -55,7 +54,7 @@ def make_directories(sftp, remote_dir, dirnames):
 
 
 def push_files(sftp, remote_dir, filenames):
-    # make directory
+    # remote copy every file
     t1 = time.time()
     sftp.chdir(remote_dir)
     bytestransfer = 0.0
@@ -89,61 +88,27 @@ def main():
     username = input("Enter your username:")
     password = getpass.getpass(prompt="Enter your password:")
 
-    TrFiles = GetFilesToTransfer(local_dir)
+    TrFiles = FilesToTransfer(local_dir)
     print("FILENAMES")
-    for i in TrFiles.filenames():
+    for i in TrFiles.get_filenames():
         print(i)
 
     paramiko.util.log_to_file('mylog')
 
     # Open a transport
-
     transport = paramiko.Transport((host, port))
     # Authenticate
     transport.connect(username=username, password=password)
-    # Go!
-
-    sftp = paramiko.SFTPClient.from_transport(transport)
-
-    make_directories(sftp, remote_dir, TrFiles.dirnames())
-    push_files(sftp, remote_dir, TrFiles.filenames())
-
-    # sftpstat = paramiko.SFTPClient.stat(sftp)
-    # sftp1 = paramiko.SFTPClient.from_transport(transport)
-    # sftp2 = paramiko.SFTPClient.from_transport(transport)
-
-    # print(sftp)
-    # print(sftp1)
-    # print(sftp2)
-
-    # List Remote Directory
-    # remotefiles = sftp.listdir()
-    # print(remotefiles)
-    # remoteobj = sftp.listdir_attr()
-    # for i in remoteobj:
-    #   print(i)
-    #   print(i.st_size)
-    #   print(i.st_uid)
-    #   print(i.st_gid)
-    #   print(i.st_mode)
-    #   print(i.st_atime)
-    #   print(i.st_mtime)
-    # print(sftpstat)
-    #  Download
-
-    # filepath = 'README.GET'
-    # localpath = 'README.GET'
-    # sftp.get(filepath, localpath)
 
     # Upload
+    sftp = paramiko.SFTPClient.from_transport(transport)
+    make_directories(sftp, remote_dir, TrFiles.get_dirnames())
+    push_files(sftp, remote_dir, TrFiles.get_filenames())
+
     t1 = time.time()
     print('Elapsed: %f seconds' % (time.time() - t1))
-    # filepath = 'README.GET'
-    # localpath = 'README.PUT'
-    # sftp.put(localpath, filepath)
 
     # Close
-
     sftp.close()
     transport.close()
 
