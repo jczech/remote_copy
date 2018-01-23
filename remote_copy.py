@@ -39,6 +39,11 @@ class FilesToTransfer:
                 relpathname = os.path.relpath(fullpathname, self.rootdir)
                 self.mydirnames.append([fullpathname, relpathname])
 
+        # log the filenames and hashes
+        with open("./fname_hash.txt", 'w') as out:
+            for _, fname, _, hash_str in self.myfilenames:
+                out.write("{0}, {1}\n".format(fname, hash_str)) 
+
     def rootdir(self):
         return self.rootdir
 
