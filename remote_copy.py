@@ -44,15 +44,6 @@ class FilesToTransfer:
             for _, fname, _, hash_str in self.myfilenames:
                 out.write("{0}, {1}\n".format(fname, hash_str)) 
 
-    def rootdir(self):
-        return self.rootdir
-
-    def get_dirnames(self):
-        return self.mydirnames
-
-    def get_filenames(self):
-        return self.myfilenames
-
 
 def make_directories(sftp, remote_dir, dirnames):
     # make the directory tree
@@ -105,7 +96,7 @@ def main():
 
     transfer_files = FilesToTransfer(local_dir)
     print("FILENAMES")
-    for fname in transfer_files.get_filenames():
+    for fname in transfer_files.myfilenames:
         print(fname)
 
     paramiko.util.log_to_file('mylog')
@@ -117,8 +108,8 @@ def main():
 
     # Upload
     sftp = paramiko.SFTPClient.from_transport(transport)
-    make_directories(sftp, remote_dir, transfer_files.get_dirnames())
-    push_files(sftp, remote_dir, transfer_files.get_filenames())
+    make_directories(sftp, remote_dir, transfer_files.mydirnames)
+    push_files(sftp, remote_dir, transfer_files.myfilenames)
 
     t1 = time.time()
     print('Elapsed: %f seconds' % (time.time() - t1))
