@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
 
+from __future__ import print_function
+from builtins import input
+
 import time
 import paramiko
 import select
@@ -8,6 +11,7 @@ import sys
 import getpass
 import argparse
 import hashlib
+
 
 
 class FilesToTransfer:
